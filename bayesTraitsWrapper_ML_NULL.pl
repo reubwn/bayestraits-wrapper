@@ -41,6 +41,8 @@ In addition, make sure BayesTraits is in \$PATH, and DEP.command and INDEP.comma
                 'p|presence' = permute presence/absence data only
                 't|traits'   = permute traits data only
                 'b|both'     = permute both [STR] (default: both)
+--l|lower   : skip sites (OGs) with <= this number of members [INT] (default: no lower limit)
+--u|upper   : skip sites (Ogs) with >= this number of members [INT] (default: no upper limit)
 --k|keep    : keep temp files (default: temp files are deleted)
 --h|help    : displays this help and quits
 
@@ -59,11 +61,13 @@ bayesTraitsWrapper_ML_NULL.pl \\
 #############
 
 ## define variables:
-my ($matrixfile,$traitsfile,$treefile,$keep,$help);
+my ($matrixfile,$traitsfile,$treefile,$keep,$help,$upper);
 ## set default values:
 my $prefix = "out";
 my $nperms = 1;
 my $shuffle = "both";
+my $lower = 0;
+my $flag = 0;
 GetOptions ( 
 	'matrix|m=s'  => \$matrixfile,
 	'traits|t=s'  => \$traitsfile,
@@ -71,6 +75,8 @@ GetOptions (
 	'prefix|p:s'  => \$prefix,
 	'nperms|n:i'  => \$nperms,
 	'shuffle|s:s' => \$shuffle,
+	'lower|l:i'   => \$lower,
+	'upper|u:i'   => \$upper,
 	'keep|k'      => \$keep,
 	'help|h'      => \$help,
 );
@@ -102,6 +108,9 @@ foreach (@FASTA) {
 	}
 }
 
+## define $upper if not given by user:
+$upper = scalar @genomes unless $upper;
+
 ##################
 ## define outfile:
 ##################
@@ -124,6 +133,7 @@ print "\tOutput written to file: $outfile\n";
 print "\tNumber of genomes: ".@genomes."\n";
 print "\tNumber of sites: $numberOfSites\n";
 print "\tNumber of permutations per site: $nperms\n";
+print "\tSkip sites with fewer than $lower and more than $upper members\n";
 
 ###################
 ## get traits data:
@@ -167,9 +177,13 @@ foreach my $i (0 .. $numberOfSites - 1) {
 	my $sum;
 	$sum += $_ for @gene_bins;
 	
-	if ( ($sum <= 4) or ($sum >= 60) ) {
-		## count number of skipped sites and unlink data file
-		$skipped++;		
+	#######################################################################
+	## don't test sites with fewer than $lower or more than $upper members:
+	#######################################################################
+
+	if ( ($sum <= $lower) or ($sum >= $upper) ) {
+		## count number of skipped sites:
+		$skipped++;	
 		
 	} else {
 		
@@ -186,7 +200,7 @@ foreach my $i (0 .. $numberOfSites - 1) {
 
 			## shuffle presence / absence data only
 			if ( ($shuffle eq 'p') or ($shuffle eq 'presence') ){
-				print "\tShuffle mode: presence\n\n\t~~~\n\n" if $i == 0;
+				print "\tShuffle mode: presence\n\n\t~~~\n\n" if $flag == 0;
 				open (my $D, ">site_$site.$j.data") or die "\n\t$!\n\n";	
 					for my $i (0 .. $#genome_names) {
 					print $D $genome_names[$i]."\t".$trait_bins[$i]."\t".$shuff_geneBins[$i]."\n";
@@ -194,14 +208,14 @@ foreach my $i (0 .. $numberOfSites - 1) {
 			close $D;
 			## shuffle trait data only
 			} elsif ( ($shuffle eq 't') or ($shuffle eq 'traits') ){
-				print "\tShuffle mode: traits\n\n\t~~~\n\n" if $i == 0;
+				print "\tShuffle mode: traits\n\n\t~~~\n\n" if $flag == 0;
 				open (my $D, ">site_$site.$j.data") or die "\n\t$!\n\n";	
 					for my $i (0 .. $#genome_names) {
 					print $D $genome_names[$i]."\t".$shuff_traitBins[$i]."\t".$gene_bins[$i]."\n";
 				}
 			## shuffle both p/a and trait data:
 			} elsif ( ($shuffle eq 'b') or ($shuffle eq 'both') ){
-				print "\tShuffle mode: both\n\n\t~~~\n\n" if $i == 0;
+				print "\tShuffle mode: both\n\n\t~~~\n\n" if $flag == 0;
 				open (my $D, ">site_$site.$j.data") or die "\n\t$!\n\n";	
 					for my $i (0 .. $#genome_names) {
 					print $D $genome_names[$i]."\t".$shuff_traitBins[$i]."\t".$shuff_geneBins[$i]."\n";
