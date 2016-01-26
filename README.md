@@ -4,7 +4,9 @@ Perl wrapper scripts for running the BayesTraits program with gene presence/abse
 ## Prerequisites
 **Perl libraries:** `Getopt::Long`, `Sort::Naturally` and `List::Util`.
 
-**BayesTraits** (http://www.evolution.rdg.ac.uk/BayesTraits.html) should be discoverable in `$PATH`, and the files DEP.command and INDEP.command need to be present in the `cwd`.
+**BayesTraits** (http://www.evolution.rdg.ac.uk/BayesTraits.html) should be discoverable in `$PATH`, and the files `DEP.command` and `INDEP.command` need to be present in the `cwd`.
+
+The `*.command` files are required for running `BayesTraits`; see the manual for more information.
 
 ### Help
 
