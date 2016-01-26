@@ -17,8 +17,8 @@ Run either program with the `--help` flag for a list of options.
 A Perl wrapper around the BayesTraits program, running the ML version of the analysis across genome-wide gene presence / absence data.
 
 Takes as input:
-* A fasta-formatted matrix of gene presence absence, where each column of the 'alignment' represents an orthologous group.
-* A traits file, formatted as `[GENOMENAME]\t[1|0]`, where 1 = trait presence, 0 = trait absence.
+* A fasta-formatted matrix of gene presence absence, where each column of the alignment represents an orthologous group, gene presence is indicated by a `1` and gene absence with `0`.
+* A traits file, formatted as `[GENOMENAME]\t[1|0]`, where `1` = trait presence, `0` = trait absence.
 * A tree file, nexus formatted (ensure taxa names correspond across all files). 
 
 Matrix file format:
