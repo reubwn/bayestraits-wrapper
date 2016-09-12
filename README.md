@@ -19,7 +19,7 @@ A Perl wrapper around the BayesTraits program, running the ML version of the ana
 Takes as input:
 * A fasta-formatted matrix of gene presence absence, where each column of the alignment represents an orthologous group, gene presence is indicated by a `1` and gene absence with `0`.
 * A traits file, formatted as `[GENOMENAME]\t[1|0]`, where `1` = trait presence, `0` = trait absence.
-* A tree file, nexus formatted (ensure taxa names correspond across all files). 
+* A tree file, nexus formatted (ensure taxa names correspond across all files).
 
 Matrix file format:
 ```
@@ -43,6 +43,15 @@ etc.
 ## bayesTraitsWrapper_ML_NULL.pl
 
 Generates a **null distribution** for testing significance of results from `bayesTraitsWrapper_ML.pl` by permuting the trait values and|or the gene presence / absence data, with respect to the phylogeny of the input taxa. This essentially breaks any associations between gene presence and trait presence that may exist in the data.
+
+## Utilities
+### add_taxa_translate_to_nexus.pl
+
+BayesTraits requires a nexus tree with a 'translate' block instead of taxa names in the newick string itself (see the BT manual, and see the example trees that ship with the BT program). The utility script `add_taxa_translate_to_nexus.pl` will insert a translate block to a tree file. Run like:
+
+```
+add_taxa_translate_to_nexus.pl [TREE.nexus] > [OUTTREE]
+```
 
 ## References
 
