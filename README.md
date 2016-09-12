@@ -10,7 +10,7 @@ The `*.command` files are required for running `BayesTraits`; see the manual for
 
 ### Help
 
-Run either program with the `--help` flag for a list of options.
+Run programs with `--help` flag to see the list of options.
 
 ## bayesTraitsWrapper_ML.pl
 
@@ -47,11 +47,7 @@ Generates a **null distribution** for testing significance of results from `baye
 ## Utilities
 ### add_taxa_translate_to_nexus.pl
 
-BayesTraits requires a nexus tree with a 'translate' block instead of taxa names in the newick string itself (see the BT manual, and see the example trees that ship with the BT program). The utility script `add_taxa_translate_to_nexus.pl` will insert a translate block to a tree file. Run like:
-
-```
-add_taxa_translate_to_nexus.pl [TREE.nexus] > [OUTTREE]
-```
+BayesTraits requires a nexus tree with a 'translate' block instead of taxa names in the newick string itself (see the BT manual, and see the example trees that ship with the BT program). The utility script `add_taxa_translate_to_nexus.pl` will insert a translate block to a tree file. Run `add_taxa_translate_to_nexus.pl -h` to see options.
 
 ## References
 
