@@ -16,8 +16,8 @@ bayesTraitsWrapper_ML_NULL.pl
 
 ".colored('SYNOPSIS','white bold')."
 
-A Perl wrapper around the BayesTraits program, to create a ".colored('null distribution','white bold')." of likelihood 
-ratio statistics across gene presence / absence data by randomly permuting the 1/0 gene data with 
+A Perl wrapper around the BayesTraits program, to create a ".colored('null distribution','white bold')." of likelihood
+ratio statistics across gene presence / absence data by randomly permuting the 1/0 gene data with
 respect to the 1/0 trait data. This should break any existing associations and provide a suitable
 null distribution against which to test the real data.
 
@@ -37,7 +37,7 @@ In addition, make sure BayesTraits is in \$PATH, and DEP.command and INDEP.comma
 --r|tree    : tree file in nexus format [STR] (required)
 --p|prefix  : output prefix to write to *.BayesTraitsML.NULL.table [STR] (default: \"out\")
 --n|nperms  : number of iterations to run for each orthologous group [INT] (default: 1)
---s|shuffle : type of permutation: 
+--s|shuffle : type of permutation:
                 'p|presence' = permute presence/absence data only
                 't|traits'   = permute traits data only
                 'b|both'     = permute both [STR] (default: both)
@@ -68,7 +68,7 @@ my $nperms = 1;
 my $shuffle = "both";
 my $lower = 0;
 my $flag = 0;
-GetOptions ( 
+GetOptions (
 	'matrix|m=s'  => \$matrixfile,
 	'traits|t=s'  => \$traitsfile,
 	'tree|r=s'    => \$treefile,
@@ -154,46 +154,46 @@ foreach (@TRAITS) {
 foreach (keys %traits) {
 	unless (defined $binary{$_}) {
 		die "\n## ERROR: Genome ID's in $matrixfile are not the same as those in $traitsfile!\n## ERROR: Make sure they all match up before continuing.\n\n"
-	} 
+	}
 }
 
 foreach my $i (0 .. $numberOfSites - 1) {
-	
+
 	my $site = $i + 1;
-	
+
 	my @gene_bins;
 	my @trait_bins;
 	my @genome_names;
-	
+
 	foreach (nsort keys %binary) {
 		my @row_bins = @{ $binary{$_} };
-		
+
 		## each should be ntax in length and in the correct relative order:
 		push (@gene_bins, $row_bins[$i]);
 		push (@trait_bins, $traits{$_});
 		push (@genome_names, $_);
 	}
-	
+
 	my $sum;
 	$sum += $_ for @gene_bins;
-	
+
 	#######################################################################
 	## don't test sites with fewer than $lower or more than $upper members:
 	#######################################################################
 
 	if ( ($sum <= $lower) or ($sum >= $upper) ) {
 		## count number of skipped sites:
-		$skipped++;	
-		
+		$skipped++;
+
 	} else {
-		
+
 		## do the calculation nperms times:
 		for my $j ( 1 .. $nperms ) {
-		
+
 			## implement the shuffle to break any existing association between gene 1/0 and trait 1/0:
 			my @shuff_geneBins = shuffle (@gene_bins);
 			my @shuff_traitBins = shuffle (@trait_bins);
-			
+
 			######################
 			## implement different shuffles depending on --shuffle flag:
 			######################
@@ -201,7 +201,7 @@ foreach my $i (0 .. $numberOfSites - 1) {
 			## shuffle presence / absence data only
 			if ( ($shuffle eq 'p') or ($shuffle eq 'presence') ){
 				print "\tShuffle mode: presence\n\n\t~~~\n\n" if $flag == 0;
-				open (my $D, ">site_$site.$j.data") or die "\n\t$!\n\n";	
+				open (my $D, ">site_$site.$j.data") or die "\n\t$!\n\n";
 					for my $i (0 .. $#genome_names) {
 					print $D $genome_names[$i]."\t".$trait_bins[$i]."\t".$shuff_geneBins[$i]."\n";
 				}
@@ -209,30 +209,30 @@ foreach my $i (0 .. $numberOfSites - 1) {
 			## shuffle trait data only
 			} elsif ( ($shuffle eq 't') or ($shuffle eq 'traits') ){
 				print "\tShuffle mode: traits\n\n\t~~~\n\n" if $flag == 0;
-				open (my $D, ">site_$site.$j.data") or die "\n\t$!\n\n";	
+				open (my $D, ">site_$site.$j.data") or die "\n\t$!\n\n";
 					for my $i (0 .. $#genome_names) {
 					print $D $genome_names[$i]."\t".$shuff_traitBins[$i]."\t".$gene_bins[$i]."\n";
 				}
 			## shuffle both p/a and trait data:
 			} elsif ( ($shuffle eq 'b') or ($shuffle eq 'both') ){
 				print "\tShuffle mode: both\n\n\t~~~\n\n" if $flag == 0;
-				open (my $D, ">site_$site.$j.data") or die "\n\t$!\n\n";	
+				open (my $D, ">site_$site.$j.data") or die "\n\t$!\n\n";
 					for my $i (0 .. $#genome_names) {
 					print $D $genome_names[$i]."\t".$shuff_traitBins[$i]."\t".$shuff_geneBins[$i]."\n";
 				}
 			} else {
 				die "## ERROR: Unrecognised option for shuffle: $shuffle\n\n";
-			}	
+			}
 
 			print "\tSite: $site.$j\n";
 			my ($LogL_DEP, $LogL_INDEP);
-			
+
 			###################################
 			## run BayesTraits DEPENDENT model:
 			###################################
 
-			die "\n\t## ERROR: Problem running BayesTraits!\n\n" if (system ("BayesTraits $treefile site_$site.$j.data < DEP.command > data_$site.$j.DEP") != 0 );
-			
+			die "\n\t## ERROR: Problem running BayesTraits!\n\n" if (system ("BayesTraitsV2 $treefile site_$site.$j.data < DEP.command > data_$site.$j.DEP") != 0 );
+
 			## get the logL from the output file:
 			open (my $DEP, "data_$site.$j.DEP") or die "\n\t## ERROR: Cannot open 'data_$site.$j.DEP': $!\n\n";
 			while (<$DEP>) {
@@ -242,13 +242,13 @@ foreach my $i (0 .. $numberOfSites - 1) {
 				}
 			}
 			close $DEP;
-			
+
 			#####################################
 			## run BayesTraits INDEPENDENT model:
 			#####################################
 
-			die "\n\t## ERROR: Problem running BayesTraits!\n\n" if (system ("BayesTraits $treefile site_$site.$j.data < INDEP.command > data_$site.$j.INDEP") != 0 );
-		
+			die "\n\t## ERROR: Problem running BayesTraits!\n\n" if (system ("BayesTraitsV2 $treefile site_$site.$j.data < INDEP.command > data_$site.$j.INDEP") != 0 );
+
 			## get the logL from the output file:
 			open (my $INDEP, "data_$site.$j.INDEP") or die "\n\t## ERROR: Cannot open 'data_$site.$j.INDEP': $!\n\n";
 			while (<$INDEP>) {
@@ -258,24 +258,24 @@ foreach my $i (0 .. $numberOfSites - 1) {
 				}
 			}
 			close $INDEP;
-			
+
 			##################################################
 			## calculate LR statistic as: 2*(Log(D) - Log(I)):
 			##################################################
 
 			my $LRStat = 2*($LogL_DEP - $LogL_INDEP);
-		
+
 			print "\t\tLogL(DEP): ".$LogL_DEP."\n";
 			print "\t\tLogL(INDEP): ".$LogL_INDEP."\n";
 			print "\t\tLikelihood ratio statistic: ".$LRStat."\n\n";
-			
+
 			## push to %results:
-			$results{"$site.$j"} = { 'LogL_DEP'   => $LogL_DEP, 
+			$results{"$site.$j"} = { 'LogL_DEP'   => $LogL_DEP,
 									 'LogL_INDEP' => $LogL_INDEP,
 									 'LRStat'     => $LRStat };
-		
+
 			## remove temp files to save space:
-			unlink ("site_$site.$j.data", "site_$site.$j.data.log.txt", "data_$site.$j.DEP", "data_$site.$j.INDEP") or die "\n\tCannot unlink files: $!\n\n" unless $keep;	
+			unlink ("site_$site.$j.data", "site_$site.$j.data.log.txt", "data_$site.$j.DEP", "data_$site.$j.INDEP") or die "\n\tCannot unlink files: $!\n\n" unless $keep;
 		}
 	}
 }
@@ -292,6 +292,6 @@ foreach (sort {$a <=> $b} keys %results) {
 }
 close $R;
 
-print "\tFinished doing it.\n\n";
+print "\tFinished.\n\n";
 
 __END__
