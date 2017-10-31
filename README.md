@@ -53,5 +53,5 @@ BayesTraits requires a nexus tree with a 'translate' block instead of taxa names
 
 * Pagel (1994) Proc R Soc Lond B 255:37
 * Barker & Pagel (2005) PLoS Comp Biol 1:e3
-* Nowell et al. (2016) Mol Plant Pathol (in prep)
+* Nowell RW et al., (2016) Mol Plant Pathol. 17:1409.
 * http://www.evolution.rdg.ac.uk/BayesTraits.html
