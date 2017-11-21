@@ -45,6 +45,10 @@ etc.
 Generates a **null distribution** for testing significance of results from `bayesTraitsWrapper_ML.pl` by permuting the trait values and|or the gene presence / absence data, with respect to the phylogeny of the input taxa. This essentially breaks any associations between gene presence and trait presence that may exist in the data.
 
 ## Utilities
+### orthogroups2fasta.pl
+
+Convert Orthgroups.txt file, e.g., from OrthoFinder, to fasta format required above. Run `orthogroups2fasta.pl -h` to see help.
+
 ### add_taxa_translate_to_nexus.pl
 
 BayesTraits requires a nexus tree with a 'translate' block instead of taxa names in the newick string itself (see the BT manual, and see the example trees that ship with the BT program). The utility script `add_taxa_translate_to_nexus.pl` will insert a translate block to a tree file. Run `add_taxa_translate_to_nexus.pl -h` to see options.
