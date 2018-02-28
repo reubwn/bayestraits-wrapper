@@ -9,6 +9,7 @@ use Sort::Naturally;
 
 my $usage = "
 Reformat Orthogroups.txt file to FASTA 1/0 matrix.
+Requires orthogroup sequence IDs to be in the OrthoMCL-style format: \"genomeID\|proteinID\" (see README) 
 
 OPTIONS:
 -i|--in   : Orthogroups.txt file [required]
