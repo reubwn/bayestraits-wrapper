@@ -47,11 +47,15 @@ Generates a **null distribution** for testing significance of results from `baye
 ## Utilities
 ### orthogroups2fasta.pl
 
-Convert Orthgroups.txt file, e.g., from OrthoFinder, to fasta format required above. Run `orthogroups2fasta.pl -h` to see help.
+Convert Orthgroups.txt file, e.g., from OrthoFinder, to fasta format required above. Run `orthogroups_to_binary_fasta.pl -h` to see help.
 
 ### add_taxa_translate_to_nexus.pl
 
 BayesTraits requires a nexus tree with a 'translate' block instead of taxa names in the newick string itself (see the BT manual, and see the example trees that ship with the BT program). The utility script `add_taxa_translate_to_nexus.pl` will insert a translate block to a tree file. Run `add_taxa_translate_to_nexus.pl -h` to see options.
+
+### get_significant_seqs_from_LR.pl
+
+Takes the table file result of `bayesTraitsWrapper_ML.pl` and a user-input LRStat threshold and will returns representative sequences in fasta format for each site that shows an LR > LRStat threshold. Currently picks simply the **longest sequence** from any significantly associated OG as the representative. Run without commands to see help.
 
 ## References
 

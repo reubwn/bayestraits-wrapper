@@ -19,10 +19,11 @@ OPTIONS:
 -l|--LRStat      : LRStat threshold to define significance [required]
 -b|--binary      : 1/0 presence/absence fasta file [required]
 -g|--orthogroups : Orthogroups.txt file [required]
--f|--fasta       : sequences in fasta format, headers must match with Orthogroups.txt
+-f|--fasta       : sequences in fasta format, headers must match with Orthogroups.txt [required]
+-o|--outdir      : outdir name [default 'output_seqdata']
 -h|--help        : shows this message
 
-USAGE:
+USAGE: get_significant_seqs_from_LR.pl -i BayesTraitsML.table -l 5 -b Orthogroups.fasta -g Orthogroups.txt -f <(cat /path/to/seqs/*faa)
 \n";
 
 my ($inputfile,$lr,$binaryfile,$orthogroupsfile,$fastafile,$help,$debug);
@@ -66,7 +67,7 @@ while (<$TABLE>) {
 	chomp;
 	next if $. == 1;
 	my @F = split (m/\s+/, $_);
-	if ($F[3] >= $lr) {
+	if ($F[3] > $lr) { ## ONLY IF LR > LRSTAT THRESHOLD
 		$table_hash{$F[0]} = $F[3]; ## key= site number; val= LRStat
 	}
 	$n++;
