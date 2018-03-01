@@ -2,7 +2,7 @@
 Perl wrapper scripts for running the BayesTraits program with gene presence/absence data across multiple genomes
 
 ## Prerequisites
-**Perl libraries:** `Getopt::Long`, `Sort::Naturally` and `List::Util`.
+**Perl libraries:** `BioPerl`, `Getopt::Long`, `Sort::Naturally` and `List::Util`.
 
 **BayesTraits** (http://www.evolution.rdg.ac.uk/BayesTraits.html) should be discoverable in `$PATH`, and the files `DEP.command` and `INDEP.command` need to be present in the `cwd`.
 
@@ -10,7 +10,7 @@ The `*.command` files are required for running `BayesTraits`; see the manual for
 
 ### Help
 
-Run programs with `--help` flag to see the list of options.
+Run programs without commands or with `-h` flag to see the list of options.
 
 ## bayesTraitsWrapper_ML.pl
 
@@ -45,7 +45,7 @@ etc.
 Generates a **null distribution** for testing significance of results from `bayesTraitsWrapper_ML.pl` by permuting the trait values and|or the gene presence / absence data, with respect to the phylogeny of the input taxa. This essentially breaks any associations between gene presence and trait presence that may exist in the data.
 
 ## Utilities
-### orthogroups2fasta.pl
+### orthogroups_to_binary_fasta.pl
 
 Convert Orthgroups.txt file, e.g., from OrthoFinder, to fasta format required above. Run `orthogroups_to_binary_fasta.pl -h` to see help.
 
