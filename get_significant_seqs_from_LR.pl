@@ -26,6 +26,7 @@ USAGE:
 \n";
 
 my ($inputfile,$lr,$binaryfile,$orthogroupsfile,$fastafile,$help,$debug);
+my $outdir = "output_seqdata";
 
 GetOptions (
 	'i|input=s'       => \$inputfile,
@@ -33,12 +34,20 @@ GetOptions (
 	'b|binary=s'      => \$binaryfile,
 	'g|orthogroups=s' => \$orthogroupsfile,
 	'f|fasta=s'       => \$fastafile,
+	'o|outdir:s'      => \$outdir,
 	'h|help'          => \$help,
 	'd|debug'         => \$debug
 );
 
 die $usage if $help;
 die $usage unless ($inputfile && $lr && $binaryfile && $orthogroupsfile);
+
+if (-e $outdir && -d $outdir) {
+	die "[ERROR] Directory '$outdir' already exists!\n";
+} else {
+	mkdir "$outdir";
+	mkdir "$outdir/fasta";
+}
 
 ## things we'll need
 my ($n);
@@ -99,6 +108,7 @@ while ( my $seq_obj = $in_f->next_seq() ) {
 print STDERR "[INFO] Number of sequences in $fastafile: ".commify(scalar(keys %proteins_hash))."\n";
 
 ## cycle through %table_hash
+open (my $LOG, ">logfile.txt") or die $!;
 foreach my $site (sort {$a<=>$b} keys %table_hash) {
 	my @participant_names = @{$orthogroups_hash{$site}};
 	my $representative = Bio::Seq->new( -length => 0 );
@@ -110,21 +120,30 @@ foreach my $site (sort {$a<=>$b} keys %table_hash) {
 		$representative = $proteins_hash{$_} if $proteins_hash{$_}->length() > $representative->length();
 	}
 
-	open (my $INFO, ">site_$site.info") or die $!;
-	print $INFO "Site number: $site\n";
-	print $INFO "Site LRStat: $table_hash{$site}\n";
-	print $INFO "Participating sequences in OG: @participant_names\n";
-	print $INFO "Representative sequence ID: ".$representative->display_name()."\n";
-	print $INFO "Representative sequence length: ".$representative->length()."\n";
-	print $INFO "Representative sequence sequence: ".$representative->seq()."\n";
-	close $INFO;
+	print $LOG "Site number: $site\n";
+	print $LOG "Site LRStat: $table_hash{$site}\n";
+	print $LOG "Participating sequences in OG: @participant_names\n";
+	print $LOG "Representative sequence ID: ".$representative->display_name()."\n";
+	print $LOG "Representative sequence length: ".$representative->length()."\n";
+	print $LOG "Representative sequence sequence: ".$representative->seq()."\n";
+	print $LOG "~~~\n";
 
 	open (my $FAA, ">site_$site.faa") or die $!;
-	print $FAA ">".$representative->display_name()."\n".$representative->seq()."\n";
+	print $FAA ">".$representative->display_name()."_".$site."\n".$representative->seq()."\n";
 	close $FAA;
 
 }
+close $LOG;
 
+## file cleanup
+`mv logfile.txt $outdir`;
+`mv *faa $outdir/fasta`;
+`cat $outdir/fasta/*faa > $outdir/all_seqs.faa`;
+
+print STDERR "[~~~~]\n";
+print STDERR "[INFO] Representative sequnces written to $outdir/fasta\n";
+print STDERR "[INFO] Multifasta written to $outdir/all_seqs.faa\n";
+print STDERR "[INFO] Finished on ".`date`."\n";
 
 ################ SUBS
 
