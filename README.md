@@ -55,7 +55,7 @@ BayesTraits requires a nexus tree with a 'translate' block instead of taxa names
 
 ### get_significant_seqs_from_LR.pl
 
-Takes the table file result of `bayesTraitsWrapper_ML.pl` and a user-input LRStat threshold and will returns representative sequences in fasta format for each site that shows an LR > LRStat threshold. Currently picks simply the **longest sequence** from any significantly associated OG as the representative. Run without commands to see help.
+Takes the table file result of `bayesTraitsWrapper_ML.pl` and a user-input LRStat threshold and will returns representative sequences in fasta format for each site that shows an LR > LRStat threshold. Currently picks simply the **longest sequence** from any significantly associated OG as the representative. Also prints a 1/0 matrix table of just the selected sites. Run without commands to see help.
 
 ## References
 

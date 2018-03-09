@@ -1,5 +1,7 @@
 #!/usr/bin/env perl
 
+## reubwn March 2018
+
 use strict;
 use warnings;
 
@@ -21,6 +23,7 @@ OPTIONS:
 -g|--orthogroups : Orthogroups.txt file [required]
 -f|--fasta       : sequences in fasta format, headers must match with Orthogroups.txt [required]
 -o|--outdir      : outdir name [default 'output_seqdata']
+-m|--outmatrix   : outmatrix name [default 'matrix.txt']
 -h|--help        : shows this message
 
 USAGE: get_significant_seqs_from_LR.pl -i BayesTraitsML.table -l 5 -b Orthogroups.fasta -g Orthogroups.txt -f <(cat /path/to/seqs/*faa)
@@ -28,6 +31,7 @@ USAGE: get_significant_seqs_from_LR.pl -i BayesTraitsML.table -l 5 -b Orthogroup
 
 my ($inputfile,$lr,$binaryfile,$orthogroupsfile,$fastafile,$help,$debug);
 my $outdir = "output_seqdata";
+my $outmatrix = "matrix.tab";
 
 GetOptions (
 	'i|input=s'       => \$inputfile,
@@ -36,6 +40,7 @@ GetOptions (
 	'g|orthogroups=s' => \$orthogroupsfile,
 	'f|fasta=s'       => \$fastafile,
 	'o|outdir:s'      => \$outdir,
+	'm|matrix:s'      => \$outmatrix,
 	'h|help'          => \$help,
 	'd|debug'         => \$debug
 );
@@ -82,13 +87,14 @@ while ( my $seq_obj = $in_b->next_seq() ) {
 	my @a = split (m//, $seq_obj->seq()); ## split 010101 string to array
 	$binary_hash{$seq_obj->display_name()} = \@a; ##key= seqid; val=$seq_obj
 }
-print STDERR "[INFO] Number of sequences in $binaryfile: ".commify(scalar(keys %binary_hash))."\n";
+print STDERR "[INFO] Number of entries in $binaryfile: ".commify(scalar(keys %binary_hash))."\n";
 if ($debug) {
 	foreach (keys %binary_hash) {
 		my @a = @{$binary_hash{$_}};
 		print STDOUT "$_\t@a\n"
 	}
 }
+my @all_participants = nsort keys %binary_hash; ## get nsorted list of all strains in analysis
 
 ## parse Orthogroups.txt
 open (my $GROUPS, $orthogroupsfile) or die $!;
@@ -96,7 +102,7 @@ while (<$GROUPS>) {
 	chomp;
 	my @a = split (m/:\s+/, $_);
 	my @b = split (m/\s+/, $a[1]);
-	$orthogroups_hash{$.} = \@b; ## key= OG name; val = @{list of proteins in OG}
+	$orthogroups_hash{$.} = \@b; ## key= line number, equivalent to site number in 1/0 file; val = @{list of proteins in OG}
 }
 close $GROUPS;
 print STDERR "[INFO] Number of OGs in $orthogroupsfile: ".commify(scalar(keys %orthogroups_hash))."\n";
@@ -110,17 +116,42 @@ print STDERR "[INFO] Number of sequences in $fastafile: ".commify(scalar(keys %p
 
 ## cycle through %table_hash
 open (my $LOG, ">logfile.txt") or die $!;
+open (my $MATRIX, ">$outmatrix") or die $!;
+print $MATRIX ("\t", join ("\t", @all_participants, "\n")); ## print header
 foreach my $site (sort {$a<=>$b} keys %table_hash) {
 	my @participant_names = @{$orthogroups_hash{$site}};
 	my $representative = Bio::Seq->new( -length => 0 );
 
 	print "[DEBUG] Site: $site\n[DEBUG] Participants: @participant_names\n[DEBUG] Representative: ".($representative->display_name())."\n" if $debug;
 
+	my %nonredundant_participant_names;
 	foreach (@participant_names) {
-		print "[DEBUG] ".$proteins_hash{$_}->display_name()."\t".$proteins_hash{$_}->length()."\n" if $debug;
+		## get longest sequence from @participant_names and set as $representative
 		$representative = $proteins_hash{$_} if $proteins_hash{$_}->length() > $representative->length();
+
+		## get unique names
+		(my $name = $_) =~ s/\|.+//;
+		$nonredundant_participant_names{$name}++;
+		print "[DEBUG] ".$proteins_hash{$_}->display_name()."\t".$proteins_hash{$_}->length()."\n" if $debug;
 	}
 
+	## print to matrix
+	print $MATRIX "site_$site\t";
+	foreach (@all_participants) {
+		if ($nonredundant_participant_names{$_}) {
+			print $MATRIX "1\t";
+		} else {
+			print $MATRIX "0\t";
+		}
+	}
+	print $MATRIX "\n";
+
+	## print to fasta
+	open (my $FAA, ">site_$site.faa") or die $!;
+	print $FAA ">".$representative->display_name()."_".$site."\n".$representative->seq()."\n";
+	close $FAA;
+
+	## print to log
 	print $LOG "Site number: $site\n";
 	print $LOG "Site LRStat: $table_hash{$site}\n";
 	print $LOG "Participating sequences in OG: @participant_names\n";
@@ -128,22 +159,20 @@ foreach my $site (sort {$a<=>$b} keys %table_hash) {
 	print $LOG "Representative sequence length: ".$representative->length()."\n";
 	print $LOG "Representative sequence sequence: ".$representative->seq()."\n";
 	print $LOG "~~~\n";
-
-	open (my $FAA, ">site_$site.faa") or die $!;
-	print $FAA ">".$representative->display_name()."_".$site."\n".$representative->seq()."\n";
-	close $FAA;
-
 }
 close $LOG;
+close $MATRIX;
 
 ## file cleanup
 `mv logfile.txt $outdir`;
 `mv *faa $outdir/fasta`;
+`mv $outmatrix $outdir`;
 `cat $outdir/fasta/*faa > $outdir/all_seqs.faa`;
 
 print STDERR "[~~~~]\n";
 print STDERR "[INFO] Representative sequnces written to $outdir/fasta\n";
 print STDERR "[INFO] Multifasta written to $outdir/all_seqs.faa\n";
+print STDERR "[INFO] Matrix written to $outdir/$outmatrix\n";
 print STDERR "[INFO] Finished on ".`date`."\n";
 
 ################ SUBS
